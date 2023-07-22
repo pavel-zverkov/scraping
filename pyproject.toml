@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "scraping"
+version = "0.1.0"
+description = ""
+authors = ["pzverkov <pzverkov@gpmdata.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+bs4 = "^0.0.1"
+requests = "^2.31.0"
+loguru = "^0.7.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
