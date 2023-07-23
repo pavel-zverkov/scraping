@@ -1,0 +1,2 @@
+class GroupCountError(ValueError):
+    pass

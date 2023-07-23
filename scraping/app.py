@@ -1,27 +1,20 @@
-from bs4 import BeautifulSoup
-import requests
 from loguru import logger
+from results.result_person_searcher import ResultPersonSearcher
+from results.results_parser import ResultsParser
 
-from results.group_info_parser import parse_group_info
-from results.group_results_parser import parse_group_results
+URL = 'http://o-mephi.net/cup/prot/Mosleto2023_7_spl.htm'
+SEARCH_ENTITY = 'Хамурзова Мария'
 
 
-TITLE_INDEX = 0
+@logger.catch
+def main() -> None:
+    results_parser = ResultsParser(URL)
+    results = results_parser.parse()
 
-# Загружаем страницу
-url = 'http://o-mephi.net/cup/prot/Mosleto2023_x_spl.htm'
-response = requests.get(url)
+    searcher = ResultPersonSearcher(SEARCH_ENTITY)
 
-# Создаем объект BeautifulSoup
-soup = BeautifulSoup(response.content, 'html.parser')
+    logger.info(searcher.search(results))
 
-# Находим все заголовки h1 на странице
-group_info_list = soup.find_all('h2')
-group_result_list = soup.find_all('pre')[:-1]
 
-for gi, group_result in enumerate(group_result_list):
-    group_info = parse_group_info(group_info_list[gi].text)
-    logger.success(group_info.group_code)
-    parse_group_results(group_result)
-
-# Выводим текст всех заголовков h1
+if __name__ == '__main__':
+    main()

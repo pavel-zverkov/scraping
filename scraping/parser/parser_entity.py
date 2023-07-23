@@ -1,5 +1,7 @@
 from abc import abstractmethod
-from parser.parser_output_entity import ParserOutputEntity
+from typing import Any
+
+# from parser.parser_output_entity import ParserOutputEntity
 
 
 class Parser:
@@ -7,9 +9,10 @@ class Parser:
         self,
         url: str
     ) -> None:
-        
+
         self.url = url
 
+    # TODO: переделать возвращаемый тип
     @abstractmethod
-    def parse(self) -> ParserOutputEntity:
+    def parse(self) -> Any:
         pass
