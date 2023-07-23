@@ -2,7 +2,7 @@ import re
 from datetime import datetime
 
 from bs4.element import NavigableString, Tag
-from loguru import logger
+from logger import logger
 
 from . import results_constants as c
 from .group_results_entity import ControlPointInfo, RawResultInfo, Result

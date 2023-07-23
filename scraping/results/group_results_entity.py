@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from typing import NamedTuple
 
 from enums.qualify import Qualify
@@ -42,6 +42,6 @@ class RawResultInfo(NamedTuple):
 
 class ControlPointInfo(NamedTuple):
     id: int
-    time: datetime.time
-    cumulative_time: datetime.time
+    time: time
+    cumulative_time: time
     place: int
