@@ -1,3 +1,6 @@
+"""
+Логгер проекта
+"""
 from loguru import logger
 from sys import stdout
 
