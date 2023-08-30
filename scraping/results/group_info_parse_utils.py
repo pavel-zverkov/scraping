@@ -33,6 +33,8 @@ def __get_gender(gender_age: str) -> Gender:
 
 
 def __get_age(gender_age: str) -> int:
+    if gender_age in ['НовичкиМ,', 'НовичкиЖ,', 'ЭкспертыМ,']:
+        return 9
     _s = gender_age[GENDER_INDEX + 1:].replace(',', '')
     _s = ''.join([i for i in _s if i.isnumeric()])
     return int(_s)
