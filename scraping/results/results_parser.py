@@ -67,7 +67,10 @@ class ResultsParser(Parser):
                 # logger.debug('Append')
             # logger.debug(competition_dict)
 
-        sorted(competition_dict, key=lambda x: len(x), reverse=True)
+        sorted_keys = sorted(competition_dict.keys(),
+                             key=lambda x: len(x), reverse=True)
+        competition_dict = dict(
+            zip(sorted_keys, [competition_dict[key] for key in sorted_keys]))
 
         # logger.info(competition_dict)
         output = []

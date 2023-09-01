@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta, time
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 from enums.qualify import Qualify
 
@@ -45,3 +45,11 @@ class ControlPointInfo(NamedTuple):
     time: time
     cumulative_time: time
     place: int
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            'id': self.id,
+            'time': self.time.strftime('%H:%M:%S'),
+            'cumulative_time': self.cumulative_time.strftime('%H:%M:%S'),
+            'place': self.place
+        }
