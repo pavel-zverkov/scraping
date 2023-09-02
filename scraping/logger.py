@@ -1,8 +1,9 @@
 """
 Логгер проекта
 """
-from loguru import logger
 from sys import stdout
+
+from loguru import logger
 
 FMT = ('{time:HH:mm:ss} <level>{level: <8}</level>' +
        '<cyan>{name}:{function}:{line}</cyan> ' +

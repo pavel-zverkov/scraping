@@ -1,4 +1,5 @@
 from typing import Any, NamedTuple
+
 from .parser_output_enum import OutputStatus
 
 

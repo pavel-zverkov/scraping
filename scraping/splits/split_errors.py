@@ -1,2 +1,0 @@
-class DifferentDistanceError(ValueError):
-    pass

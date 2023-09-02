@@ -1,0 +1,2 @@
+class DifferentDistanceError(Exception):
+    pass

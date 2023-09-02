@@ -1,7 +1,8 @@
 import datetime
-from results.results_constants import TIME_FORMAT
-from splits.split_entity import Split
-from splits.split_errors import DifferentDistanceError
+
+from ..constants import TIME_FORMAT
+from .split_entity import Split
+from .split_errors import DifferentDistanceError
 
 BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
@@ -52,6 +53,7 @@ class SplitComparer:
         t_2: datetime.time
     ) -> str:
         return ' >' if t_2 < t_1 else '< '
+
     # def __compare_times(self, t_1: datetime.time, t_2: datetime.time) -> tuple[str]:
     #     return (t_1.strftime(TIME_FORMAT), self.__bold_wrapper(t_2.strftime(TIME_FORMAT))) \
     #         if t_2 < t_1 \
