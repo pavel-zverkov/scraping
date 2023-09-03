@@ -1,5 +1,7 @@
 
+from collections import defaultdict
 from datetime import date, datetime
+from json import dumps
 
 from ...competition.competition_entity import Competition
 from ...event.event_entity import Event
@@ -8,7 +10,7 @@ from .. import constants as c
 from ..api_competition_result import APICompetitionResult
 from ..api_results import APIResults
 from ..web_parser.competition_results import CompetitionResults
-from ..web_parser.group_info import GroupInfo
+from ...logger import logger
 from ..web_parser.group_result import GroupResults
 from ..web_parser.person_result import PersonResult
 
@@ -20,7 +22,7 @@ class ResultsAPITransformer:
             self.__parse_competition_info(results.competition_info)
 
         event = self.__transform_competition_info_to_event(event_name)
-        competition_dict = \
+        competition_info_list = \
             self.__create_competition_dict(
                 results.results,
                 description,
@@ -30,7 +32,7 @@ class ResultsAPITransformer:
 
         api_competition_result_list = [
             APICompetitionResult(competition, competition_workout_list)
-            for competition, competition_workout_list in competition_dict
+            for competition, competition_workout_list in competition_info_list
         ]
 
         return APIResults(event, api_competition_result_list)
@@ -43,7 +45,8 @@ class ResultsAPITransformer:
         competition_date, competition_location = \
             info_list[c.COMPETITION_DATE_PLACE_INDEX].split(', ')
 
-        competition_date = datetime.strptime(competition_date, '%d %B %Y')
+        competition_date = datetime.strptime(
+            competition_date, '%d %B %Y')
 
         return event_name, description, competition_date, competition_location
 
@@ -51,50 +54,45 @@ class ResultsAPITransformer:
         self,
         group_result_list: list[GroupResults],
         description: str,
-        competition_location: str,
-        competition_date: date
-    ) -> dict[Competition, list[Workout]]:
+        competition_date: date,
+        competition_location: str
+    ) -> list[tuple[Competition, list[Workout]]]:
 
-        raw_competition_dict = {
-            str(group_result.group_info.ctrl_points_order): {
-                group_result.group_info.group_code: group_result.results
-            }
-            for group_result in group_result_list
-        }
+        raw_competition_dict: dict[str, list[GroupResults]] = defaultdict(list)
+        for group_result in group_result_list:
+            key = str(group_result.group_info.ctrl_points_order)
+            value = group_result
 
-        # competition_dict = defaultdict(list)
-        # for group_result in group_result_list:
-        #     key = group_result.group_info.ctrl_points_cnt
-        #     value = {
-        #         group_result.group_info: [
-        #             self.__trasform_person_result_to_workout(person_result)
-        #             for person_result in group_result.results
-        #         ]
-        #     }
-        #     competition_dict[key].append(value)
-        competition_dict = {
-            Competition(
-                name=f'D{i + 1}',
-                date=competition_date,
-                description=description,
-                location=competition_location,
-                control_point_list=self.__str_to_list(ctr_point_list),
-                class_list=self.__get_class_list(competition_info),
-                format=c.COMPETITION_FORMAT
-            ): [
-                self.__trasform_person_result_to_workout(
-                    person_result,
-                    competition_date,
-                    f'D{i + 1}'
-                )
-                for group_result_list in competition_info.values()
-                for person_result in group_result_list
-            ]
-            for i, (ctr_point_list, competition_info)
+            raw_competition_dict[key].append(value)
+
+        raw_competition_dict = self.__sort_dict(raw_competition_dict)
+
+        competition_info_list = [
+            (
+                Competition(
+                    name=f'D{i + 1}',
+                    date=competition_date,
+                    description=description,
+                    location=competition_location,
+                    control_point_list=self.__str_to_list(ctr_point_list),
+                    class_list=self.__get_class_list(group_result_list),
+                    format=c.COMPETITION_FORMAT
+                ),
+                [
+                    self.__trasform_person_result_to_workout(
+                        person_result,
+                        competition_date,
+                        f'D{i + 1}'
+                    )
+                    for group_result in group_result_list
+                    for person_result in group_result.results
+                ]
+            )
+            for i, (ctr_point_list, group_result_list)
             in enumerate(raw_competition_dict.items())
-        }
+        ]
 
-        return competition_dict
+        return competition_info_list
 
     def __transform_competition_info_to_event(
         self,
@@ -104,18 +102,18 @@ class ResultsAPITransformer:
 
         if 'лето' in event_name.lower():
             start_date, end_date = \
-                datetime(YEAR, 6, 1).date(), datetime(YEAR, 8, 31)
+                datetime(YEAR, 6, 1).date(), datetime(YEAR, 8, 31).date()
 
         if 'осень' in event_name.lower():
             start_date, end_date = \
-                datetime(YEAR, 9, 1).date(), datetime(YEAR, 11, 31)
+                datetime(YEAR, 9, 1).date(), datetime(YEAR, 11, 31).date()
 
         if 'зима' in event_name.lower():
             start_date, end_date = \
-                datetime(YEAR, 12, 1).date(), datetime(YEAR, 3, 1)
+                datetime(YEAR, 12, 1).date(), datetime(YEAR, 3, 1).date()
 
         start_date, end_date = \
-            datetime(YEAR, 3, 1).date(), datetime(YEAR, 5, 31)
+            datetime(YEAR, 3, 1).date(), datetime(YEAR, 5, 31).date()
 
         return Event(
             name=event_name,
@@ -125,17 +123,17 @@ class ResultsAPITransformer:
 
     def __get_class_list(
         self,
-        info: dict[GroupInfo, list[Workout]]
+        result_list: list[GroupResults]
     ) -> str:
         return [
-            group_info.group_code
-            for group_info in info.keys()
+            group_result.group_info.group_code
+            for group_result in result_list
         ]
 
     def __trasform_person_result_to_workout(
         self,
         result: PersonResult,
-        competition_date: date,
+        competition_date: datetime,
         competition_name: str
     ) -> Workout:
         splits = {
@@ -147,7 +145,7 @@ class ResultsAPITransformer:
             user_first_name=result.first_name,
             user_last_name=result.second_name,
             user_birthdate=datetime(result.birth_year).date()
-            if result.birth_year else None,
+            if result.birth_year else datetime(1970, 1, 1).date(),
             date=competition_date,
             splits=splits,
             competition_name=competition_name
@@ -156,12 +154,24 @@ class ResultsAPITransformer:
     def __str_to_list(self, s: str) -> list[str]:
         return s.replace('[', '').replace(']', '').split(', ')
 
+    def __sort_dict(self, d: dict) -> dict:
+        sorted_keys = sorted(d.keys(), key=lambda x: len(x), reverse=True)
+        return {key: d[key] for key in sorted_keys}
+
 
 if __name__ == '__main__':
     from ..web_parser.results_parser import ResultsParser
+    from ...abase.utils.datetime_json_encoder import DateTimeEncoder
+    from dataclasses import asdict
 
     MOS_SEASON_URL = 'http://o-mephi.net/cup/prot/Mosleto2023_9_spl.htm'
     parser = ResultsParser(MOS_SEASON_URL)
     transformer = ResultsAPITransformer()
 
-    transformer.transform_results(parser.parse())
+    api_results = transformer.transform_results(parser.parse())
+    logger.info(dumps(asdict(api_results.event),
+                indent=2, cls=DateTimeEncoder))
+    logger.info(dumps(asdict(api_results.results[0].competition),
+                      indent=2, cls=DateTimeEncoder))
+    logger.info(dumps(api_results.results[0].workout_list[0].__dict__,
+                      indent=2, cls=DateTimeEncoder))

@@ -79,7 +79,7 @@ def __parse_result(result_info: RawPersonResultInfo) -> PersonResult:
         result = datetime.strptime(
             re.findall(c.TIME_PATTERN, person_info)[0],
             c.TIME_FORMAT
-        )
+        ).time()
         lider_lag = re.findall(c .LAG_PATTERN, person_info)[0]
         place = person_info_list[c.PLACE_INDEX]
 
@@ -122,9 +122,9 @@ def __collect_split_info(
         output.append(
             ControlPointInfo(
                 id=cp_id,
-                split_time=datetime.strptime(time, c.TIME_FORMAT),
+                split_time=datetime.strptime(time, c.TIME_FORMAT).time(),
                 cumulative_time=datetime.strptime(
-                    cumulative_time, c.TIME_FORMAT),
+                    cumulative_time, c.TIME_FORMAT).time(),
                 place=place
             )
         )
@@ -170,14 +170,15 @@ def __get_dist_len(dist_len: str) -> float:
 
 def __add_result_to_split(
     split: list[ControlPointInfo],
-    result: datetime.time,
+    result: datetime,
     place: int
 ) -> list[ControlPointInfo]:
-    last_point_info = split[-1]
+
     split.append(
         ControlPointInfo(
-            id=-1,
-            split_time=result - last_point_info.cumulative_time,
+            id='-1',
+            # split_time=result - last_point_info.cumulative_time,
+            split_time=datetime(1970, 1, 1, 0, 0).time(),
             cumulative_time=result,
             place=place
         )
