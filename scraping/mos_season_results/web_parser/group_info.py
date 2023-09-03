@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from enums.gender import Gender
+from ...enums.gender import Gender
 
 
 @dataclass

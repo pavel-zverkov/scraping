@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import NamedTuple
+from typing import NamedTuple, Union
 
 from ...enums.qualify import Qualify
 from .control_point_info import ControlPointInfo
@@ -12,7 +12,7 @@ class PersonResult:
     first_name: str
     second_name: str
     control_points_info: list[ControlPointInfo]
-    result: datetime.time | None = None
+    result: Union[datetime.time, None] = None
     orient_id: int | None = None
     birth_year: int | None = None
     place: int | None = None

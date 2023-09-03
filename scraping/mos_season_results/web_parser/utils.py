@@ -3,8 +3,8 @@ from datetime import datetime
 
 from bs4.element import NavigableString, Tag
 
-from enums.gender import Gender
-
+from ...enums.gender import Gender
+from ...logger import logger
 from .. import constants as c
 from .control_point_info import ControlPointInfo
 from .group_info import GroupInfo
@@ -76,7 +76,10 @@ def __parse_result(result_info: RawPersonResultInfo) -> PersonResult:
     if person_info_list[c.PLACE_INDEX].isnumeric() \
             or person_info_list[c.PLACE_INDEX] == c.OUT_OF_COMPETITION:
 
-        result = re.findall(c.TIME_PATTERN, person_info)[0]
+        result = datetime.strptime(
+            re.findall(c.TIME_PATTERN, person_info)[0],
+            c.TIME_FORMAT
+        )
         lider_lag = re.findall(c .LAG_PATTERN, person_info)[0]
         place = person_info_list[c.PLACE_INDEX]
 
@@ -85,12 +88,18 @@ def __parse_result(result_info: RawPersonResultInfo) -> PersonResult:
         lider_lag = None
         place = None
 
+    if result:
+        control_points_info = __add_result_to_split(
+            control_points_info,
+            result,
+            place
+        )
     return PersonResult(
         serial=int(serial),
         first_name=first_name,
         second_name=second_name,
         control_points_info=control_points_info,
-        result=datetime.strptime(result, c.TIME_FORMAT) if result else None,
+        result=result if result else None,
         lider_lag=lider_lag if lider_lag else None,
         place=place if place else None
     )
@@ -113,7 +122,7 @@ def __collect_split_info(
         output.append(
             ControlPointInfo(
                 id=cp_id,
-                time=datetime.strptime(time, c.TIME_FORMAT),
+                split_time=datetime.strptime(time, c.TIME_FORMAT),
                 cumulative_time=datetime.strptime(
                     cumulative_time, c.TIME_FORMAT),
                 place=place
@@ -157,3 +166,20 @@ def __get_additional_code(gender_age: str) -> str:
 
 def __get_dist_len(dist_len: str) -> float:
     return float(dist_len.replace(',', '.'))
+
+
+def __add_result_to_split(
+    split: list[ControlPointInfo],
+    result: datetime.time,
+    place: int
+) -> list[ControlPointInfo]:
+    last_point_info = split[-1]
+    split.append(
+        ControlPointInfo(
+            id=-1,
+            split_time=result - last_point_info.cumulative_time,
+            cumulative_time=result,
+            place=place
+        )
+    )
+    return split

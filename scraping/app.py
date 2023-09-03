@@ -1,15 +1,14 @@
 from datetime import datetime
 from json import dumps
 
+from competition.competition_entity import Competition
+from logger import logger
+from mos_season_results.result_person_searcher import ResultPersonSearcher
+from mos_season_results.web_parser.parser_entity import ResultsParser
 from requests import post
 from splits.split_comparer import SplitComparer
 from splits.split_entity import Split
 from tqdm import tqdm
-
-from competition.competition_entity import Competition
-from logger import logger
-from mos_season_results.web_parser.parser_entity import ResultsParser
-from mos_season_results.result_person_searcher import ResultPersonSearcher
 
 URL = 'http://o-mephi.net/cup/prot/Mosleto2023_9_spl.htm'
 PERSON_1 = 'Ольховский Дмитрий'
