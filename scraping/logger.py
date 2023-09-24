@@ -15,5 +15,5 @@ logger.remove()
 logger.add(
     sink=stdout,
     colorize=True,
-    format=FMT, level='DEBUG'
+    format=FMT, level='SUCCESS'
 )

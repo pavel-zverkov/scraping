@@ -14,7 +14,7 @@ class PersonResult:
     control_points_info: list[ControlPointInfo]
     result: Union[datetime.time, None] = None
     orient_id: int | None = None
-    birth_year: int | None = None
+    birth_year: datetime | None = None
     place: int | None = None
     club: str | None = None
     qualify: Qualify | None = None
