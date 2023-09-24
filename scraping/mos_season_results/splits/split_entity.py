@@ -2,10 +2,10 @@ import datetime
 from dataclasses import dataclass
 from string import Template
 
-from ..competition.competition_entity import Competition
-from ..mos_season_results.constants import TIME_FORMAT
-from ..mos_season_results.parser.control_point_info import ControlPointInfo
-from ..mos_season_results.parser.group_info import GroupInfo
+from ...competition.competition_entity import Competition
+from ...mos_season_results.constants import TIME_FORMAT
+from ..web_parser.control_point_info import ControlPointInfo
+from ..web_parser.group_info import GroupInfo
 
 split_template = Template(
     '$ctrl_point_id'

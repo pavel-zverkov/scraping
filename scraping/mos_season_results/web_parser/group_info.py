@@ -5,7 +5,7 @@ from ...enums.gender import Gender
 
 @dataclass
 class GroupInfo:
-    gender: Gender
+    gender: Gender | None
     age: int
     additional_code: str
     ctrl_points_cnt: int
@@ -14,4 +14,6 @@ class GroupInfo:
 
     @property
     def group_code(self) -> str:
-        return self.gender.value + str(self.age) + self.additional_code
+        str_age = str(self.age) if self.age else ''
+        str_gender = self.gender.value if self.gender else ''
+        return str_gender + str_age + self.additional_code

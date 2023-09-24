@@ -100,26 +100,29 @@ class ResultsAPITransformer:
     ) -> Event:
         YEAR = datetime.now().year
 
+        start_date, end_date = \
+            datetime(YEAR, 3, 1).date(), datetime(YEAR, 5, 31).date()
+
         if 'лето' in event_name.lower():
             start_date, end_date = \
                 datetime(YEAR, 6, 1).date(), datetime(YEAR, 8, 31).date()
 
         if 'осень' in event_name.lower():
             start_date, end_date = \
-                datetime(YEAR, 9, 1).date(), datetime(YEAR, 11, 31).date()
+                datetime(YEAR, 9, 1).date(), datetime(YEAR, 11, 30).date()
 
         if 'зима' in event_name.lower():
             start_date, end_date = \
                 datetime(YEAR, 12, 1).date(), datetime(YEAR, 3, 1).date()
 
-        start_date, end_date = \
-            datetime(YEAR, 3, 1).date(), datetime(YEAR, 5, 31).date()
-
-        return Event(
+        event = Event(
             name=event_name,
             start_date=start_date,
             end_date=end_date
         )
+
+        logger.info(event)
+        return event
 
     def __get_class_list(
         self,
@@ -136,6 +139,7 @@ class ResultsAPITransformer:
         competition_date: datetime,
         competition_name: str
     ) -> Workout:
+
         splits = {
             str(ctrl_point_info.id): ctrl_point_info
             for ctrl_point_info in result.control_points_info
@@ -144,7 +148,7 @@ class ResultsAPITransformer:
         return Workout(
             user_first_name=result.first_name,
             user_last_name=result.second_name,
-            user_birthdate=datetime(result.birth_year).date()
+            user_birthdate=result.birth_year.date()
             if result.birth_year else datetime(1970, 1, 1).date(),
             date=competition_date,
             splits=splits,
