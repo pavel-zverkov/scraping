@@ -9,7 +9,7 @@
     "python.envFile": "${workspaceFolder}/.env",
     "editor.formatOnSave": true,
     "[python]": {
-        "editor.defaultFormatter": "ms-python.autopep8"
+        "editor.wordWrapColumn": 120
     },
     "python.formatting.provider": "none",
     "pylint.args": [

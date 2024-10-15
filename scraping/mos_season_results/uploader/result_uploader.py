@@ -1,4 +1,4 @@
-from json import dumps, loads
+from json import dumps
 from requests import Response, post
 from tqdm import tqdm
 
@@ -7,9 +7,14 @@ from ...logger import logger
 
 from ..constants import SPLIT_API_URL
 from ..api_results import APIResults
+from .map_uploader import MapUploader
 
 
 class ResultUploader:
+
+    def __init__(self, comp_url: str) -> None:
+        self.comp_url = comp_url
+        self.map_uploader = MapUploader()
 
     def upload(self, results: APIResults) -> None:
 
@@ -44,6 +49,18 @@ class ResultUploader:
 
             logger.success(
                 f'Success upload results for {competition_result.competition.name}')
+
+            logger.debug('Try to upload competition map')
+            try:
+                distance_number = competition_result.competition.name.replace(
+                    'D', '')
+                map_url = self.comp_url.replace(
+                    'spl.htm', f'cont{distance_number}.jpg')
+                logger.success(f'MAP URL - {map_url}')
+                self.map_uploader.upload(map_url, response_competition.json())
+            except Exception as map_upload_error:
+                logger.error(
+                    f'Error while upload map for competition, {map_upload_error}')
 
     @staticmethod
     def _post_status(response: Response) -> None:

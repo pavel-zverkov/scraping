@@ -101,7 +101,11 @@ class ResultsAPITransformer:
         YEAR = datetime.now().year
 
         start_date, end_date = \
-            datetime(YEAR, 3, 1).date(), datetime(YEAR, 5, 31).date()
+            datetime.now().date(), datetime.now().date()
+
+        if 'весна':
+            start_date, end_date = \
+                datetime(YEAR, 3, 1).date(), datetime(YEAR, 5, 31).date()
 
         if 'лето' in event_name.lower():
             start_date, end_date = \

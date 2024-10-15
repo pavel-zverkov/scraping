@@ -11,6 +11,7 @@ from .group_info import GroupInfo
 from .person_result import PersonResult, RawPersonResultInfo
 
 GENDER_INDEX = 0
+SHORT_INFO_LEN = 2
 
 
 def parse_group_results(
@@ -46,7 +47,7 @@ def parse_group_results(
 
     results = results[1:]
 
-    return control_points_order, [__parse_result(result) for result in results]
+    return control_points_order, [__parse_result(result, control_points_order) for result in results]
 
 
 def parse_group_info(
@@ -65,11 +66,12 @@ def parse_group_info(
     )
 
 
-def __parse_result(result_info: RawPersonResultInfo) -> PersonResult:
+def __parse_result(result_info: RawPersonResultInfo, group_control_points_order: list[int]) -> PersonResult:
 
     control_points_info = __collect_split_info(
         result_info.split_info,
-        result_info.cumulative_info
+        result_info.cumulative_info,
+        group_control_points_order
     )
 
     person_info = result_info.person_info
@@ -84,7 +86,7 @@ def __parse_result(result_info: RawPersonResultInfo) -> PersonResult:
         result = datetime.strptime(
             re.findall(c.TIME_PATTERN, person_info)[0],
             c.TIME_FORMAT
-        )
+        ).time()
         lider_lag = re.findall(c.LAG_PATTERN, person_info)
         lider_lag = lider_lag[0] if lider_lag else None
 
@@ -115,7 +117,8 @@ def __parse_result(result_info: RawPersonResultInfo) -> PersonResult:
 
 def __collect_split_info(
     split_info: str,
-    cumulative_info: str
+    cumulative_info: str,
+    group_control_points_order: list[int]
 ) -> list[ControlPointInfo]:
 
     logger.debug(split_info)
@@ -124,14 +127,14 @@ def __collect_split_info(
     logger.info(split_info)
 
     output = []
-    for split, cumulative_split in zip(split_info, cumulative_info):
-        time, cp_id, place = __parse_control_point_time_info(split)
+    for split, cumulative_split, cp_id in zip(split_info, cumulative_info, group_control_points_order):
+        time, split_cp_id, place = __parse_control_point_time_info(split)
         cumulative_time, _, _ = __parse_control_point_time_info(
             cumulative_split)
 
         output.append(
             ControlPointInfo(
-                id=cp_id,
+                id=split_cp_id or str(cp_id),
                 split_time=datetime.strptime(
                     __format_time(time), c.TIME_FORMAT).time(),
                 cumulative_time=datetime.strptime(
@@ -144,7 +147,11 @@ def __collect_split_info(
 
 
 def __parse_control_point_time_info(control_point_time_info: str) -> list:
-    return control_point_time_info.replace('(', ' ').replace(')', ' ').split()
+    cp_info = control_point_time_info.replace('(', ' ').replace(')', ' ').split()
+    if len(cp_info) <= SHORT_INFO_LEN:
+        cp_info.insert(1, None)
+
+    return cp_info
 
 
 def __parse_control_points_order(group_result_title: str) -> list[int]:
